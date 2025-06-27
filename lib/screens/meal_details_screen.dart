@@ -1,58 +1,68 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meals/model/meal.dart';
+import 'package:meals/providers/favorities_provider.dart';
 
-class MealDetailsScreen extends StatefulWidget {
-  const MealDetailsScreen(
-    this.favoritiesMeal,
-    this.onToggleFavoritesMeal, {
-    super.key,
-  });
-
-  final void Function(Meal meal) onToggleFavoritesMeal;
-  final List<Meal> favoritiesMeal;
-
-  @override
-  State<MealDetailsScreen> createState() => _MealDetailsScreenState();
-}
-
-class _MealDetailsScreenState extends State<MealDetailsScreen> {
-  var a = '';
-
-  void reload() {
-    final b = 'b';
-    setState(() {
-      a = b;
-    });
-    print(a);
-  }
+class MealDetailsScreen extends StatelessWidget {
+  const MealDetailsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final meal = ModalRoute.of(context)!.settings.arguments as Meal;
-    final isExisting = widget.favoritiesMeal.contains(meal);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(meal.title),
         backgroundColor: Theme.of(context).colorScheme.onPrimary,
         actions: [
-          IconButton(
-            onPressed: () {
-              widget.onToggleFavoritesMeal(meal);
-              reload();
+          Consumer(
+            builder: (context, ref, child) {
+              final favoriteMeals = ref.watch(favoriteMealsProvider);
+              final isExisting = favoriteMeals.contains(meal);
+
+              return AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                transitionBuilder: (child, animation) {
+                  return RotationTransition(
+                    turns: Tween<double>(
+                      begin: 0.5,
+                      end: 1.0,
+                    ).animate(animation),
+                    child: child,
+                  );
+                },
+                child: IconButton(
+                  onPressed: () {
+                    final message = ref
+                        .read(favoriteMealsProvider.notifier)
+                        .toggleMealFavoritiesStatus(meal);
+
+                    ScaffoldMessenger.of(context).clearSnackBars();
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text(message)));
+                  },
+                  icon: isExisting
+                      ? Icon(Icons.star)
+                      : Icon(Icons.star_outline),
+                  key: ValueKey(isExisting),
+                ),
+              );
             },
-            icon: isExisting ? Icon(Icons.star) : Icon(Icons.star_outline),
           ),
         ],
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Image.network(
-              meal.imageUrl,
-              height: 300,
-              width: double.infinity,
-              fit: BoxFit.cover,
+            Hero(
+              tag: meal.id,
+              child: Image.network(
+                meal.imageUrl,
+                height: 300,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
             ),
             const SizedBox(height: 12.0),
             Text(

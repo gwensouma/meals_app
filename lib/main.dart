@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:google_fonts/google_fonts.dart';
-import 'package:meals/screen/tabs_screen.dart';
+import 'package:meals/screens/tabs_screen.dart';
 
 final theme = ThemeData(
   useMaterial3: true,
@@ -14,28 +15,8 @@ final theme = ThemeData(
   ),
 );
 
-class Test {
-  final int a;
-
-  Test(this.a);
-
-  @override
-  bool operator ==(covariant Test other) {
-    // TODO: implement ==
-    return a == other.a;
-  }
-}
-
 void main() {
-  // final Test a1 = Test(1);
-  // final Test a2 = Test(1);
-
-  // List<int> a1 = [1, 2, 3];
-  // List<int> a2 = [1, 2, 3];
-
-  // print(a1 == a2);
-
-  runApp(const App());
+  runApp(ProviderScope(child: App()));
 }
 
 class App extends StatelessWidget {

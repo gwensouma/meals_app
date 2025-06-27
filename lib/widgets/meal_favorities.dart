@@ -1,44 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meals/model/meal.dart';
-import 'package:meals/screen/filters_screen.dart';
-import 'package:meals/screen/meal_details_screen.dart';
+import 'package:meals/providers/favorities_provider.dart';
+import 'package:meals/providers/filters_provider.dart';
+import 'package:meals/screens/meal_details_screen.dart';
 import 'package:meals/widgets/meal_item.dart';
 
-class MealFavorities extends StatelessWidget {
-  const MealFavorities(
-    this.availabelMeals,
-    this.favoritiesMeal,
-    this.onToggleFavoritesMeal, {
-    super.key,
-  });
-
-  final List<Meal> favoritiesMeal;
-  final void Function(Meal meal) onToggleFavoritesMeal;
-  final Map<Filter, bool> availabelMeals;
+class MealFavorities extends ConsumerWidget {
+  const MealFavorities({super.key});
 
   void _selectMeal(BuildContext context, Meal selectMeal) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (ctx) =>
-            MealDetailsScreen(favoritiesMeal, onToggleFavoritesMeal),
+        builder: (ctx) => MealDetailsScreen(),
         settings: RouteSettings(arguments: selectMeal),
       ),
     );
   }
 
   @override
-  Widget build(BuildContext context) {
-    final availabelList = favoritiesMeal.where((e) {
-      if (availabelMeals[Filter.glutenFree]! && !e.isGlutenFree) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final favoriteMeals = ref.watch(favoriteMealsProvider);
+    final activerFilters = ref.watch(filtersProvider);
+
+    final availabelList = favoriteMeals.where((e) {
+      if (activerFilters[Filter.glutenFree]! && !e.isGlutenFree) {
         return false;
       }
-      if (availabelMeals[Filter.lactoseFree]! && !e.isLactoseFree) {
+      if (activerFilters[Filter.lactoseFree]! && !e.isLactoseFree) {
         return false;
       }
-      if (availabelMeals[Filter.vegetarian]! && !e.isVegetarian) {
+      if (activerFilters[Filter.vegetarian]! && !e.isVegetarian) {
         return false;
       }
-      if (availabelMeals[Filter.vegan]! && !e.isVegan) {
+      if (activerFilters[Filter.vegan]! && !e.isVegan) {
         return false;
       }
       return true;

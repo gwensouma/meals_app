@@ -2,30 +2,22 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meals/model/meal.dart';
-import 'package:meals/screen/filters_screen.dart';
-import 'package:meals/screen/meal_details_screen.dart';
+import 'package:meals/providers/filters_provider.dart';
+import 'package:meals/screens/meal_details_screen.dart';
 import 'package:meals/widgets/meal_item.dart';
 
-class FutureMeal extends StatefulWidget {
-  const FutureMeal(
-    this.availabelMeals,
-    this.favoritiesMeal,
-    this.onToggleFavoritesMeal,
-    this.id, {
-    super.key,
-  });
+class FutureMeal extends ConsumerStatefulWidget {
+  const FutureMeal(this.id, {super.key});
 
-  final Map<Filter, bool> availabelMeals;
   final String id;
-  final void Function(Meal meal) onToggleFavoritesMeal;
-  final List<Meal> favoritiesMeal;
 
   @override
-  State<FutureMeal> createState() => _FutureMealState();
+  ConsumerState<FutureMeal> createState() => _FutureMealState();
 }
 
-class _FutureMealState extends State<FutureMeal> {
+class _FutureMealState extends ConsumerState<FutureMeal> {
   late Future<List<Meal>> _futureMeal;
 
   bool _hasLoadedMeal = false;
@@ -34,22 +26,20 @@ class _FutureMealState extends State<FutureMeal> {
   void initState() {
     super.initState();
     _futureMeal = loadMeal();
-    print('fetched categorys');
+    print('fetched meals from category');
   }
 
   void _selectMeal(BuildContext context, Meal selectMeal) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (ctx) => MealDetailsScreen(
-          widget.favoritiesMeal,
-          widget.onToggleFavoritesMeal,
-        ),
+        builder: (ctx) => MealDetailsScreen(),
         settings: RouteSettings(arguments: selectMeal),
       ),
     );
   }
 
   FutureBuilder<List<Meal>> buildMeal() {
+    final activeFilters = ref.watch(filtersProvider);
     return FutureBuilder(
       future: _futureMeal,
       builder: (context, snapshot) {
@@ -66,17 +56,16 @@ class _FutureMealState extends State<FutureMeal> {
           }
 
           final availabelList = data.where((e) {
-            if (widget.availabelMeals[Filter.glutenFree]! && !e.isGlutenFree) {
+            if (activeFilters[Filter.glutenFree]! && !e.isGlutenFree) {
               return false;
             }
-            if (widget.availabelMeals[Filter.lactoseFree]! &&
-                !e.isLactoseFree) {
+            if (activeFilters[Filter.lactoseFree]! && !e.isLactoseFree) {
               return false;
             }
-            if (widget.availabelMeals[Filter.vegetarian]! && !e.isVegetarian) {
+            if (activeFilters[Filter.vegetarian]! && !e.isVegetarian) {
               return false;
             }
-            if (widget.availabelMeals[Filter.vegan]! && !e.isVegan) {
+            if (activeFilters[Filter.vegan]! && !e.isVegan) {
               return false;
             }
             return true;
@@ -85,6 +74,7 @@ class _FutureMealState extends State<FutureMeal> {
           final fromCategory = availabelList
               .where((e) => e.categories.contains(widget.id))
               .toList();
+
           if (fromCategory.isEmpty) {
             return Center(
               child: Text(
@@ -95,6 +85,7 @@ class _FutureMealState extends State<FutureMeal> {
               ),
             );
           }
+
           return ListView.builder(
             itemCount: fromCategory.length,
             itemBuilder: (context, index) {

@@ -12,15 +12,25 @@ class MealItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      margin: const EdgeInsets.all(8.0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+      clipBehavior: Clip.hardEdge,
+      elevation: 2.0,
       child: InkWell(
         onTap: () {
           selectMeal(meal);
         },
         child: Stack(
           children: [
-            FadeInImage(
-              placeholder: MemoryImage(kTransparentImage),
-              image: NetworkImage(meal.imageUrl),
+            Hero(
+              tag: meal.id,
+              child: FadeInImage(
+                placeholder: MemoryImage(kTransparentImage),
+                image: NetworkImage(meal.imageUrl),
+                fit: BoxFit.cover,
+                height: 200,
+                width: double.infinity,
+              ),
             ),
             Positioned(
               bottom: 0,
