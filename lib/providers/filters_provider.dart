@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meals/model/meal.dart';
 import 'package:meals/providers/future_meals_provider.dart';
@@ -53,7 +52,7 @@ final filteredMealsProvider = Provider<AsyncValue<List<Meal>>>((ref) {
     AsyncError(:final error) => AsyncError(
       error,
       StackTrace.current,
-    ), // Return AsyncError
+    ), 
     _ => const AsyncLoading(), // Return AsyncLoading
   };
 });
